@@ -1,65 +1,73 @@
 package com.nttdata.dockerized.postgresql.service.impl;
 
+import com.nttdata.dockerized.postgresql.exception.BadRequestException;
+import com.nttdata.dockerized.postgresql.exception.NotFoundException;
 import com.nttdata.dockerized.postgresql.mapper.CategoryMapper;
-import com.nttdata.dockerized.postgresql.model.dto.CategoryDto;
-import com.nttdata.dockerized.postgresql.model.dto.CategorySaveRequestDto;
-import com.nttdata.dockerized.postgresql.model.dto.CategorySaveResponseDto;
+import com.nttdata.dockerized.postgresql.model.dto.CategoryCreateRequestDto;
+import com.nttdata.dockerized.postgresql.model.dto.CategoryResponseDto;
+import com.nttdata.dockerized.postgresql.model.dto.CategoryUpdateRequestDto;
 import com.nttdata.dockerized.postgresql.model.entity.Category;
 import com.nttdata.dockerized.postgresql.repository.CategoryRepository;
 import com.nttdata.dockerized.postgresql.service.CategoryService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.List;
 
+
 @Service
+@RequiredArgsConstructor
+@Transactional
 public class CategoryServiceImpl implements CategoryService {
 
-    @Autowired
-    private CategoryRepository categoryRepository;
+    private final CategoryRepository categoryRepository;
+    private final CategoryMapper categoryMapper;
 
     @Override
-    public List<CategoryDto> listAll() {
-        List<Category> categories = (List<Category>) categoryRepository.findAll();
-        return CategoryMapper.INSTANCE.map(categories);
+    @Transactional(readOnly = true)
+    public List<CategoryResponseDto> listAll() {
+        List<Category> categories = categoryRepository.findAll();
+        return categoryMapper.toDtoList(categories);
     }
 
     @Override
-    public CategoryDto findById(Long id) {
+    @Transactional(readOnly = true)
+    public CategoryResponseDto findById(Long id) {
         Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Categoría no encontrada con ID: " + id));
-        return CategoryMapper.INSTANCE.map(category);
+                .orElseThrow(() -> new NotFoundException("Categoría no encontrada con ID: " + id));
+        return categoryMapper.toResponseDto(category);
     }
 
     @Override
-    @Transactional
-    public CategorySaveResponseDto save(CategorySaveRequestDto request) {
+    public CategoryResponseDto save(CategoryCreateRequestDto request) {
         if (request == null || request.getName() == null || request.getName().trim().isEmpty()) {
-            throw new IllegalArgumentException("El nombre de la categoría no puede estar vacío");
+            throw new BadRequestException("El nombre de la categoría no puede estar vacío");
         }
 
-        Category category = CategoryMapper.INSTANCE.toEntity(request);
+        Category category = categoryMapper.toEntity(request);
         Category savedCategory = categoryRepository.save(category);
-        return CategoryMapper.INSTANCE.toCategorySaveResponseDto(savedCategory);
+        return categoryMapper.toResponseDto(savedCategory);
     }
 
     @Override
-    @Transactional
-    public CategoryDto update(Long id, CategorySaveRequestDto request) {
+    public CategoryResponseDto update(Long id, CategoryUpdateRequestDto request) {
         Category existingCategory = categoryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Categoría no encontrada con ID: " + id));
+                .orElseThrow(() -> new NotFoundException("Categoría no encontrada con ID: " + id));
 
-        Category categoryToUpdate = CategoryMapper.INSTANCE.toEntityForUpdate(id, request, existingCategory);
-        Category updatedCategory = categoryRepository.save(categoryToUpdate);
-        return CategoryMapper.INSTANCE.map(updatedCategory);
+        if (request == null || request.getName() == null || request.getName().trim().isEmpty()) {
+            throw new BadRequestException("El nombre de la categoría no puede estar vacío");
+        }
+
+        categoryMapper.updateEntityFromDto(request, existingCategory);
+
+        Category updatedCategory = categoryRepository.save(existingCategory);
+        return categoryMapper.toResponseDto(updatedCategory);
     }
 
     @Override
-    @Transactional
     public void deleteById(Long id) {
         if (!categoryRepository.existsById(id)) {
-            throw new RuntimeException("Categoría no encontrada con ID: " + id);
+            throw new NotFoundException("Categoría no encontrada con ID: " + id);
         }
         categoryRepository.deleteById(id);
     }

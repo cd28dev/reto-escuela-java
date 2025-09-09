@@ -1,84 +1,91 @@
 package com.nttdata.dockerized.postgresql.service.impl;
 
+import com.nttdata.dockerized.postgresql.exception.BadRequestException;
+import com.nttdata.dockerized.postgresql.exception.NotFoundException;
 import com.nttdata.dockerized.postgresql.mapper.UserMapper;
-import com.nttdata.dockerized.postgresql.model.dto.UserDto;
-import com.nttdata.dockerized.postgresql.model.dto.UserSaveRequestDto;
-import com.nttdata.dockerized.postgresql.model.dto.UserSaveResponseDto;
+import com.nttdata.dockerized.postgresql.model.dto.UserCreateRequestDto;
+import com.nttdata.dockerized.postgresql.model.dto.UserResponseDto;
+import com.nttdata.dockerized.postgresql.model.dto.UserUpdateRequestDto;
 import com.nttdata.dockerized.postgresql.model.entity.User;
 import com.nttdata.dockerized.postgresql.repository.UserRepository;
 import com.nttdata.dockerized.postgresql.service.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final UserMapper userMapper;
 
-    public UserServiceImpl(UserRepository userRepository) {
+    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper) {
         this.userRepository = userRepository;
+        this.userMapper = userMapper;
     }
 
     @Override
-    public List<UserDto> listAll() {
+    public List<UserResponseDto> listAll() {
         List<User> users = (List<User>) userRepository.findAll();
-        return UserMapper.INSTANCE.map(users);
+        return userMapper.toResponseDtoList(users);
     }
 
     @Override
-    public UserDto findById(Long id) {
+    public UserResponseDto findById(Long id) {
+        if (id == null) {
+            throw new BadRequestException("El ID no puede ser null");
+        }
+
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + id));
-        return UserMapper.INSTANCE.map(user); // Usar el mapper
+                .orElseThrow(() -> new NotFoundException("Usuario no encontrado con ID: " + id));
+        return userMapper.toResponseDto(user);
     }
 
     @Override
     @Transactional
-    public UserSaveResponseDto save(UserSaveRequestDto request) {
+    public UserResponseDto save(UserCreateRequestDto request) {
         if (request == null) {
-            throw new IllegalArgumentException("Los datos del usuario no pueden ser null");
+            throw new BadRequestException("Los datos del usuario no pueden ser null");
         }
 
-        User user = UserMapper.INSTANCE.toEntity(request);
-        user.setActive(Boolean.TRUE);
+        User user = userMapper.toEntity(request);
+        user.setFechaRegistro(LocalDateTime.now());
         User savedUser = userRepository.save(user);
 
-        return UserMapper.INSTANCE.toUserSaveResponseDto(savedUser);
+        return userMapper.toResponseDto(savedUser);
     }
 
     @Override
     @Transactional
-    public UserDto update(Long id, UserSaveRequestDto request) {
+    public UserResponseDto update(Long id, UserUpdateRequestDto request) {
         if (id == null) {
-            throw new IllegalArgumentException("El ID no puede ser null");
+            throw new BadRequestException("El ID no puede ser null");
         }
         if (request == null) {
-            throw new IllegalArgumentException("Los datos de actualización no pueden ser null");
+            throw new BadRequestException("Los datos de actualización no pueden ser null");
         }
 
         User existingUser = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + id));
+                .orElseThrow(() -> new NotFoundException("Usuario no encontrado con ID: " + id));
 
-        User userToUpdate = UserMapper.INSTANCE.toEntityForUpdate(id, request, existingUser);
-        User updatedUser = userRepository.save(userToUpdate);
+        userMapper.updateEntityFromDto(request, existingUser);
+        User updatedUser = userRepository.save(existingUser);
 
-        return UserMapper.INSTANCE.map(updatedUser);
+        return userMapper.toResponseDto(updatedUser);
     }
 
     @Override
     @Transactional
     public void deleteById(Long id) {
         if (id == null) {
-            throw new IllegalArgumentException("El ID no puede ser null");
+            throw new BadRequestException("El ID no puede ser null");
         }
 
-        if (!userRepository.existsById(id)) {
-            throw new RuntimeException("Usuario no encontrado con ID: " + id);
-        }
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Usuario no encontrado con ID: " + id));
 
-        userRepository.deleteById(id);
+        userRepository.delete(user);
     }
 }
-

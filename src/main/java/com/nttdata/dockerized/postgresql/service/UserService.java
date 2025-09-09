@@ -1,17 +1,16 @@
 package com.nttdata.dockerized.postgresql.service;
 
-import com.nttdata.dockerized.postgresql.model.dto.UserDto;
-import com.nttdata.dockerized.postgresql.model.dto.UserSaveRequestDto;
-import com.nttdata.dockerized.postgresql.model.dto.UserSaveResponseDto;
-import com.nttdata.dockerized.postgresql.model.entity.User;
+import com.nttdata.dockerized.postgresql.model.dto.UserCreateRequestDto;
+import com.nttdata.dockerized.postgresql.model.dto.UserResponseDto;
+import com.nttdata.dockerized.postgresql.model.dto.UserUpdateRequestDto;
 
 import java.util.List;
 
 public interface UserService {
 
-    List<UserDto> listAll();
-    UserDto findById(Long id);
-    UserSaveResponseDto save(UserSaveRequestDto request);
-    UserDto update(Long id, UserSaveRequestDto request);
+    List<UserResponseDto> listAll();
+    UserResponseDto findById(Long id);
+    UserResponseDto save(UserCreateRequestDto request);
+    UserResponseDto update(Long id, UserUpdateRequestDto request);
     void deleteById(Long id);
 }

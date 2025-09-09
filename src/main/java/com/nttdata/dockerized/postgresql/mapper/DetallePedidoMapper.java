@@ -1,6 +1,5 @@
 package com.nttdata.dockerized.postgresql.mapper;
 
-import com.nttdata.dockerized.postgresql.model.dto.DetallePedidoDto;
 import com.nttdata.dockerized.postgresql.model.dto.DetallePedidoSaveRequestDto;
 import com.nttdata.dockerized.postgresql.model.entity.DetallePedido;
 import com.nttdata.dockerized.postgresql.model.entity.Product;

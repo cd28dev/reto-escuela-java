@@ -1,7 +1,6 @@
 package com.nttdata.dockerized.postgresql.service.impl;
 
 import com.nttdata.dockerized.postgresql.mapper.ProductMapper;
-import com.nttdata.dockerized.postgresql.model.dto.ProductDto;
 import com.nttdata.dockerized.postgresql.model.dto.ProductSaveRequestDto;
 import com.nttdata.dockerized.postgresql.model.dto.ProductSaveResponseDto;
 import com.nttdata.dockerized.postgresql.model.entity.Product;
