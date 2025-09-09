@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,6 +37,16 @@ public class Pedido {
             this.fechaPedido = LocalDateTime.now();
         }
     }
+
+    @Transient
+    public BigDecimal getTotal() {
+        if (detallesPedido == null) return BigDecimal.ZERO;
+
+        return detallesPedido.stream()
+                .map(DetallePedido::getSubtotal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
 
 
 }

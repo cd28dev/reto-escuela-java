@@ -30,4 +30,12 @@ public class DetallePedido {
     @Column(nullable = false)
     private BigDecimal precioUnitario;
 
+    @Transient
+    public BigDecimal getSubtotal() {
+        if (cantidad != null && precioUnitario != null) {
+            return precioUnitario.multiply(BigDecimal.valueOf(cantidad));
+        }
+        return BigDecimal.ZERO;
+    }
+
 }

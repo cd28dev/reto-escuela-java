@@ -1,8 +1,11 @@
 package com.nttdata.dockerized.postgresql.controller;
 
-import com.nttdata.dockerized.postgresql.model.dto.PedidoSaveRequestDto;
-import com.nttdata.dockerized.postgresql.model.dto.PedidoSaveResponseDto;
+import com.nttdata.dockerized.postgresql.model.dto.PedidoCreateRequestDto;
+import com.nttdata.dockerized.postgresql.model.dto.PedidoResponseDto;
+import com.nttdata.dockerized.postgresql.model.dto.PedidoUpdateRequestDto;
 import com.nttdata.dockerized.postgresql.service.PedidoService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,56 +16,36 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/pedidos")
+@RequiredArgsConstructor
 public class PedidoController {
 
-    @Autowired
-    private PedidoService pedidoService;
+    private final PedidoService pedidoService;
 
     @GetMapping
-    public ResponseEntity<List<PedidoDto>> getAllPedidos() {
-        List<PedidoDto> pedidos = pedidoService.listAll();
-        return ResponseEntity.ok(pedidos);
+    public ResponseEntity<List<PedidoResponseDto>> listAll() {
+        return ResponseEntity.ok(pedidoService.listAll());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<PedidoDto> getPedidoById(@PathVariable Long id) {
-        try {
-            PedidoDto pedido = pedidoService.findById(id);
-            return ResponseEntity.ok(pedido);
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<PedidoResponseDto> findById(@PathVariable Long id) {
+        return ResponseEntity.ok(pedidoService.findById(id));
     }
 
     @PostMapping
-    public ResponseEntity<?> createPedido(@RequestBody PedidoSaveRequestDto request) {
-        try {
-            PedidoSaveResponseDto savedPedido = pedidoService.save(request);
-            return ResponseEntity.status(HttpStatus.CREATED).body(savedPedido);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
+    public ResponseEntity<PedidoResponseDto> create(@Valid @RequestBody PedidoCreateRequestDto request) {
+        PedidoResponseDto created = pedidoService.save(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updatePedido(@PathVariable Long id,
-                                          @RequestBody PedidoSaveRequestDto request) {
-        try {
-            PedidoDto updatedPedido = pedidoService.update(id, request);
-            return ResponseEntity.ok(updatedPedido);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
+    public ResponseEntity<PedidoResponseDto> update(@PathVariable Long id,
+                                                    @Valid @RequestBody PedidoUpdateRequestDto request) {
+        return ResponseEntity.ok(pedidoService.update(id, request));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deletePedido(@PathVariable Long id) {
-        try {
-            pedidoService.deleteById(id);
-            return ResponseEntity.noContent().build();
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        pedidoService.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
-
 }

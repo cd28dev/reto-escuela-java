@@ -1,124 +1,106 @@
 package com.nttdata.dockerized.postgresql.service.impl;
 
+import com.nttdata.dockerized.postgresql.exception.NotFoundException;
+import com.nttdata.dockerized.postgresql.mapper.DetallePedidoMapper;
 import com.nttdata.dockerized.postgresql.mapper.PedidoMapper;
-import com.nttdata.dockerized.postgresql.model.dto.PedidoSaveRequestDto;
-import com.nttdata.dockerized.postgresql.model.dto.PedidoSaveResponseDto;
+import com.nttdata.dockerized.postgresql.model.dto.DetallePedidoUpdateRequestDto;
+import com.nttdata.dockerized.postgresql.model.dto.PedidoCreateRequestDto;
+import com.nttdata.dockerized.postgresql.model.dto.PedidoResponseDto;
+import com.nttdata.dockerized.postgresql.model.dto.PedidoUpdateRequestDto;
+import com.nttdata.dockerized.postgresql.model.entity.DetallePedido;
 import com.nttdata.dockerized.postgresql.model.entity.Pedido;
 import com.nttdata.dockerized.postgresql.model.entity.Product;
+import com.nttdata.dockerized.postgresql.model.entity.User;
 import com.nttdata.dockerized.postgresql.repository.PedidoRepository;
 import com.nttdata.dockerized.postgresql.repository.ProductRepository;
 import com.nttdata.dockerized.postgresql.repository.UserRepository;
 import com.nttdata.dockerized.postgresql.service.PedidoService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
 import java.util.List;
 
+
 @Service
+@RequiredArgsConstructor
+@Transactional
 public class PedidoServiceImpl implements PedidoService {
-    @Autowired
-    private PedidoRepository pedidoRepository;
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private ProductRepository productRepository;
+
+    private final PedidoRepository pedidoRepository;
+    private final UserRepository userRepository;
+    private final ProductRepository productoRepository;
+    private final PedidoMapper pedidoMapper;
+    private final DetallePedidoMapper detallePedidoMapper;
 
     @Override
-    public List<PedidoDto> listAll() {
-        List<Pedido> pedidos = (List<Pedido>) pedidoRepository.findAll();
-        return PedidoMapper.INSTANCE.map(pedidos);
+    @Transactional(readOnly = true)
+    public List<PedidoResponseDto> listAll() {
+        List<Pedido> pedidos = pedidoRepository.findAll();
+        return pedidoMapper.toResponseList(pedidos);
     }
 
     @Override
-    public PedidoDto findById(Long id) {
+    @Transactional(readOnly = true)
+    public PedidoResponseDto findById(Long id) {
         Pedido pedido = pedidoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Pedido no encontrado con ID: " + id));
-        return PedidoMapper.INSTANCE.map(pedido);
+                .orElseThrow(() -> new NotFoundException("Pedido con id " + id + " no encontrado"));
+        return pedidoMapper.toResponseDto(pedido);
     }
 
     @Override
-    @Transactional
-    public PedidoSaveResponseDto save(PedidoSaveRequestDto request) {
-        validatePedidoSaveRequest(request);
+    public PedidoResponseDto save(PedidoCreateRequestDto request) {
+        User user = userRepository.findById(request.getUserId())
+                .orElseThrow(() -> new NotFoundException("Usuario con id " + request.getUserId() + " no encontrado"));
 
-        userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + request.getUserId()));
+        Pedido pedido = pedidoMapper.toEntity(request);
+        pedido.setUser(user);
 
+        List<DetallePedido> detalles = request.getDetalles().stream().map(detalleDto -> {
+            Product producto = productoRepository.findById(detalleDto.getProductoId())
+                    .orElseThrow(() -> new NotFoundException("Producto con id " + detalleDto.getProductoId() + " no encontrado"));
 
-        Pedido pedido = PedidoMapper.INSTANCE.toEntity(request);
+            DetallePedido detalle = detallePedidoMapper.toEntity(detalleDto);
+            detalle.setPedido(pedido);
+            detalle.setProducto(producto);
 
-        if (pedido.getActive() == null) {
-            pedido.setActive(true);
-        }
+            return detalle;
+        }).toList();
 
-        if (pedido.getFechaPedido() == null) {
-            pedido.setFechaPedido(LocalDateTime.now());
-        }
+        pedido.setDetallesPedido(detalles);
 
-        if (pedido.getDetallesPedido() != null) {
-            pedido.getDetallesPedido().forEach(detalle -> {
-                detalle.setPedido(pedido);
-                Product product = productRepository.findById(detalle.getProducto().getId())
-                        .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
-                detalle.setPrecioUnitario(product.getPrice());
-            });
-        }
-
-        Pedido savedPedido = pedidoRepository.save(pedido);
-
-        PedidoSaveResponseDto response = PedidoMapper.INSTANCE.toPedidoSaveResponseDto(savedPedido);
-        // Calcular y establecer el total
-        response.setTotal(PedidoMapper.INSTANCE.calcularTotal(savedPedido));
-
-        return response;
+        Pedido saved = pedidoRepository.save(pedido);
+        return pedidoMapper.toResponseDto(saved);
     }
 
     @Override
-    @Transactional
-    public PedidoDto update(Long id, PedidoSaveRequestDto request) {
-        Pedido existingPedido = pedidoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Pedido no encontrado con ID: " + id));
+    public PedidoResponseDto update(Long id, PedidoUpdateRequestDto request) {
+        Pedido pedido = pedidoRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Pedido con id " + id + " no encontrado"));
 
-        if (request.getUserId() != null && !request.getUserId().equals(existingPedido.getUser().getId())) {
-            userRepository.findById(request.getUserId())
-                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado con ID: " + request.getUserId()));
-        }
-
-        Pedido pedidoToUpdate = PedidoMapper.INSTANCE.toEntityForUpdate(id, request, existingPedido);
+        pedidoMapper.updateEntityFromDto(request, pedido);
 
         if (request.getDetalles() != null && !request.getDetalles().isEmpty()) {
-            pedidoToUpdate.getDetallesPedido().forEach(detalle -> {
-                Product product = productRepository.findById(detalle.getProducto().getId())
-                        .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
-                detalle.setPrecioUnitario(product.getPrice());
-            });
+            for (DetallePedidoUpdateRequestDto detalleDto : request.getDetalles()) {
+                DetallePedido detalleExistente = pedido.getDetallesPedido().stream()
+                        .filter(d -> d.getId().equals(detalleDto.getId()))
+                        .findFirst()
+                        .orElseThrow(() -> new NotFoundException(
+                                "Detalle con id " + detalleDto.getId() + " no encontrado en este pedido"));
+
+                detalleExistente.setCantidad(detalleDto.getCantidad());
+                detalleExistente.setPrecioUnitario(detalleDto.getPrecioUnitario());
+            }
         }
 
-        Pedido updatedPedido = pedidoRepository.save(pedidoToUpdate);
-        return PedidoMapper.INSTANCE.map(updatedPedido);
+        Pedido updated = pedidoRepository.save(pedido);
+        return pedidoMapper.toResponseDto(updated);
     }
+
 
     @Override
-    @Transactional
     public void deleteById(Long id) {
-        if (!pedidoRepository.existsById(id)) {
-            throw new RuntimeException("Pedido no encontrado con ID: " + id);
-        }
-        pedidoRepository.deleteById(id);
+        Pedido pedido = pedidoRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Pedido con id " + id + " no encontrado"));
+        pedidoRepository.delete(pedido);
     }
-
-    private void validatePedidoSaveRequest(PedidoSaveRequestDto request) {
-        if (request == null) {
-            throw new IllegalArgumentException("La solicitud no puede ser null");
-        }
-        if (request.getUserId() == null) {
-            throw new IllegalArgumentException("El ID de usuario no puede ser null");
-        }
-        if (request.getDetalles() == null || request.getDetalles().isEmpty()) {
-            throw new IllegalArgumentException("El pedido debe tener al menos un detalle");
-        }
-    }
-
 }

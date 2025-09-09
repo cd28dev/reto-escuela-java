@@ -9,11 +9,13 @@ import java.util.List;
 
 @Getter
 @Setter
-public class PedidoSaveResponseDto {
+public class PedidoResponseDto {
+
     private Long id;
     private LocalDateTime fechaPedido;
-    private String active;
-    private UserDto user;
-    private List<DetallePedidoDto> detallesPedido;
+    private Boolean active;
+    private UserResponseDto user;
+    private List<DetallePedidoResponseDto> detalles;
     private BigDecimal total;
+
 }

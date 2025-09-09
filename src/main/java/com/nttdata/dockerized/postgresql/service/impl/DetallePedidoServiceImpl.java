@@ -1,96 +1,76 @@
 package com.nttdata.dockerized.postgresql.service.impl;
 
+import com.nttdata.dockerized.postgresql.exception.ResourceNotFoundException;
 import com.nttdata.dockerized.postgresql.mapper.DetallePedidoMapper;
-import com.nttdata.dockerized.postgresql.model.dto.DetallePedidoSaveRequestDto;
-import com.nttdata.dockerized.postgresql.model.dto.DetallePedidoSaveResponseDto;
+import com.nttdata.dockerized.postgresql.model.dto.DetallePedidoCreateRequestDto;
+import com.nttdata.dockerized.postgresql.model.dto.DetallePedidoResponseDto;
+import com.nttdata.dockerized.postgresql.model.dto.DetallePedidoUpdateRequestDto;
 import com.nttdata.dockerized.postgresql.model.entity.DetallePedido;
+import com.nttdata.dockerized.postgresql.model.entity.Pedido;
 import com.nttdata.dockerized.postgresql.model.entity.Product;
 import com.nttdata.dockerized.postgresql.repository.DetallePedidoRepository;
 import com.nttdata.dockerized.postgresql.repository.PedidoRepository;
 import com.nttdata.dockerized.postgresql.repository.ProductRepository;
 import com.nttdata.dockerized.postgresql.service.DetallePedidoService;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.util.List;
 
+
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class DetallePedidoServiceImpl implements DetallePedidoService {
 
     private final DetallePedidoRepository detallePedidoRepository;
     private final PedidoRepository pedidoRepository;
     private final ProductRepository productRepository;
+    private final DetallePedidoMapper detallePedidoMapper;
 
     @Override
-    public List<DetallePedidoDto> listAll() {
-        List<DetallePedido> detalles = (List<DetallePedido>) detallePedidoRepository.findAll();
-        return DetallePedidoMapper.INSTANCE.map(detalles);
+    public List<DetallePedidoResponseDto> listAll() {
+        List<DetallePedido> detalles = detallePedidoRepository.findAll();
+        return detallePedidoMapper.toResponseDtoList(detalles);
     }
 
     @Override
-    public DetallePedidoDto findById(Long id) {
-        DetallePedido detalle = detallePedidoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Detalle de pedido no encontrado con ID: " + id));
-        return DetallePedidoMapper.INSTANCE.map(detalle);
+    public DetallePedidoResponseDto findById(Long id) {
+        DetallePedido detallePedido = detallePedidoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("DetallePedido no encontrado con id: " + id));
+        return detallePedidoMapper.toResponseDto(detallePedido);
     }
 
     @Override
-    @Transactional
-    public DetallePedidoSaveResponseDto save(DetallePedidoSaveRequestDto request) {
+    public DetallePedidoResponseDto save(DetallePedidoCreateRequestDto dto) {
+        Pedido pedido = pedidoRepository.findById(dto.getPedidoId())
+                .orElseThrow(() -> new ResourceNotFoundException("Pedido no encontrado con id: " + dto.getPedidoId()));
 
-        Product product = productRepository.findById(request.getProductoId())
-                .orElseThrow(() -> new RuntimeException("Producto no encontrado con ID: " + request.getProductoId()));
+        Product producto = productRepository.findById(dto.getProductoId())
+                .orElseThrow(() -> new ResourceNotFoundException("Producto no encontrado con id: " + dto.getProductoId()));
 
-        if (!Boolean.TRUE.equals(product.getActive())) {
-            throw new RuntimeException("El producto con ID " + request.getProductoId() + " no está activo");
-        }
+        DetallePedido detallePedido = detallePedidoMapper.toEntity(dto);
+        detallePedido.setPedido(pedido);
+        detallePedido.setProducto(producto);
 
-        DetallePedido detalle = DetallePedidoMapper.INSTANCE.toEntity(request);
-
-        if (detalle.getPrecioUnitario() == null) {
-            detalle.setPrecioUnitario(product.getPrice());
-        }
-
-        DetallePedidoSaveResponseDto savedDetalle = detallePedidoRepository.save(detalle);
-        return DetallePedidoMapper.INSTANCE.map(savedDetalle);
+        DetallePedido saved = detallePedidoRepository.save(detallePedido);
+        return detallePedidoMapper.toResponseDto(saved);
     }
 
     @Override
-    @Transactional
-    public DetallePedidoDto update(Long id, DetallePedidoSaveRequestDto request) {
-        DetallePedido existingDetalle = detallePedidoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Detalle de pedido no encontrado con ID: " + id));
+    public DetallePedidoResponseDto update(Long id, DetallePedidoUpdateRequestDto dto) {
+        DetallePedido detallePedido = detallePedidoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("DetallePedido no encontrado con id: " + id));
 
-        if (request.getProductoId() != null && !request.getProductoId().equals(existingDetalle.getProducto().getId())) {
-            Product product = productRepository.findById(request.getProductoId())
-                    .orElseThrow(() -> new RuntimeException("Producto no encontrado con ID: " + request.getProductoId()));
+        detallePedidoMapper.updateEntityFromDto(dto, detallePedido);
 
-            if (!Boolean.TRUE.equals(product.getActive())) {
-                throw new RuntimeException("El producto con ID " + request.getProductoId() + " no está activo");
-            }
-        }
-
-        DetallePedido detalleToUpdate = DetallePedidoMapper.INSTANCE.toEntityForUpdate(id, request, existingDetalle);
-
-        if (request.getProductoId() != null && !request.getProductoId().equals(existingDetalle.getProducto().getId())
-                && request.getPrecioUnitario() == null) {
-            Product newProduct = productRepository.findById(request.getProductoId()).get();
-            detalleToUpdate.setPrecioUnitario(newProduct.getPrice());
-        }
-
-        DetallePedido updatedDetalle = detallePedidoRepository.save(detalleToUpdate);
-        return DetallePedidoMapper.INSTANCE.map(updatedDetalle);
+        DetallePedido updated = detallePedidoRepository.save(detallePedido);
+        return detallePedidoMapper.toResponseDto(updated);
     }
 
     @Override
-    @Transactional
     public void deleteById(Long id) {
         if (!detallePedidoRepository.existsById(id)) {
-            throw new RuntimeException("Detalle de pedido no encontrado con ID: " + id);
+            throw new ResourceNotFoundException("DetallePedido no encontrado con id: " + id);
         }
         detallePedidoRepository.deleteById(id);
     }
-
 }

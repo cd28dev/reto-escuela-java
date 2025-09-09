@@ -7,11 +7,12 @@ import java.math.BigDecimal;
 
 @Getter
 @Setter
-public class ProductSaveResponseDto {
+public class ProductResponseDto {
     private Long id;
     private String name;
     private String description;
     private BigDecimal price;
-    private String active;
-    private CategoryDto category;
+    private Boolean active;
+    private Long categoryId;
+    private String categoryName;
 }
