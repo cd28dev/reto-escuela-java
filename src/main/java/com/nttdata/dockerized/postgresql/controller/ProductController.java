@@ -1,6 +1,5 @@
 package com.nttdata.dockerized.postgresql.controller;
 
-import com.nttdata.dockerized.postgresql.model.dto.ProductDto;
 import com.nttdata.dockerized.postgresql.model.dto.ProductSaveRequestDto;
 import com.nttdata.dockerized.postgresql.model.dto.ProductSaveResponseDto;
 import com.nttdata.dockerized.postgresql.service.ProductService;
