@@ -19,57 +19,51 @@ public class PedidoController {
     private final PedidoService pedidoService;
 
     @GetMapping
-    public ResponseEntity<List<PedidoResponseDto>> listAll() {
-        return ResponseEntity.ok(pedidoService.listAll());
+    public List<PedidoResponseDto> listAll() {
+        return pedidoService.listAll();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<PedidoResponseDto> findById(@PathVariable Long id) {
-        return ResponseEntity.ok(pedidoService.findById(id));
+    public PedidoResponseDto findById(@PathVariable Long id) {
+        return pedidoService.findById(id);
     }
 
     @PostMapping
-    public ResponseEntity<PedidoResponseDto> create(@Valid @RequestBody PedidoCreateRequestDto request) {
-        PedidoResponseDto created = pedidoService.save(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    public PedidoResponseDto create(@Valid @RequestBody PedidoCreateRequestDto request) {
+        return pedidoService.save(request);
     }
 
-
     @PostMapping("/{pedidoId}/detalles")
-    public ResponseEntity<PedidoResponseDto> addDetalle(
+    public PedidoResponseDto addDetalle(
             @PathVariable Long pedidoId,
             @Valid @RequestBody DetallePedidoCreateRequestDto detalleDto) {
-        PedidoResponseDto updated = pedidoService.addDetalle(pedidoId, detalleDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(updated);
+        return pedidoService.addDetalle(pedidoId, detalleDto);
     }
 
     @PutMapping("/{pedidoId}/detalles/{detalleId}")
-    public ResponseEntity<PedidoResponseDto> updateDetalle(
+    public PedidoResponseDto updateDetalle(
             @PathVariable Long pedidoId,
             @PathVariable Long detalleId,
             @Valid @RequestBody DetallePedidoUpdateRequestDto request) {
-        PedidoResponseDto updated = pedidoService.updateDetalle(pedidoId, detalleId, request);
-        return ResponseEntity.ok(updated);
+        return pedidoService.updateDetalle(pedidoId, detalleId, request);
     }
 
     @DeleteMapping("/{pedidoId}/detalles/{detalleId}")
-    public ResponseEntity<PedidoResponseDto> removeDetalle(
+    public PedidoResponseDto removeDetalle(
             @PathVariable Long pedidoId,
             @PathVariable Long detalleId) {
-        PedidoResponseDto updated = pedidoService.removeDetalle(pedidoId, detalleId);
-        return ResponseEntity.ok(updated);
+        return pedidoService.removeDetalle(pedidoId, detalleId);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<PedidoResponseDto> update(
+    public PedidoResponseDto update(
             @PathVariable Long id,
             @Valid @RequestBody PedidoUpdateRequestDto request) {
-        return ResponseEntity.ok(pedidoService.update(id, request));
+        return pedidoService.update(id, request);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public void delete(@PathVariable Long id) {
         pedidoService.deleteById(id);
-        return ResponseEntity.noContent().build();
     }
 }
