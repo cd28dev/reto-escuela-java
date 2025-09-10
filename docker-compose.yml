@@ -1,14 +1,14 @@
 services:
-#  java_app:
-#    build: .
-#    ports:
-#      - 8081:8083
-#    environment:
-#      - DATABASE_URL=jdbc:postgresql://java_db:5432/postgres
-#      - DATABASE_USERNAME=admin
-#      - DATABASE_PASSWORD=admin
-#    depends_on:
-#      - java_db
+  java_app:
+    build: .
+    ports:
+      - 8081:8083
+    environment:
+      - DATABASE_URL=jdbc:postgresql://java_db:5432/postgres
+      - DATABASE_USERNAME=admin
+      - DATABASE_PASSWORD=admin
+    depends_on:
+      - java_db
 
   java_db:
     image: postgres:15
