@@ -1,31 +1,22 @@
 package com.nttdata.dockerized.postgresql.mapper;
 
-import com.nttdata.dockerized.postgresql.model.dto.UserDto;
-import com.nttdata.dockerized.postgresql.model.dto.UserSaveRequestDto;
-import com.nttdata.dockerized.postgresql.model.dto.UserSaveResponseDto;
+import com.nttdata.dockerized.postgresql.model.dto.UserCreateRequestDto;
+import com.nttdata.dockerized.postgresql.model.dto.UserResponseDto;
+import com.nttdata.dockerized.postgresql.model.dto.UserUpdateRequestDto;
 import com.nttdata.dockerized.postgresql.model.entity.User;
-import org.mapstruct.AfterMapping;
-import org.mapstruct.Mapper;
-import org.mapstruct.MappingTarget;
-import org.mapstruct.factory.Mappers;
-
+import org.mapstruct.*;
 import java.util.List;
 
-@Mapper
+@Mapper(componentModel = "spring")
 public interface UserMapper {
+    UserResponseDto toResponseDto(User user);
+    List<UserResponseDto> toResponseDtoList(List<User> users);
 
-    UserMapper INSTANCE = Mappers.getMapper(UserMapper.class);
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "fechaRegistro", ignore = true)
+    @Mapping(target = "pedidos", ignore = true)
+    User toEntity(UserCreateRequestDto dto);
 
-    public UserDto map(User user);
-
-    public List<UserDto> map(List<User> users);
-
-    public User toEntity(UserSaveRequestDto userSaveRequestDto);
-
-    public UserSaveResponseDto toUserSaveResponseDto(User user);
-
-    @AfterMapping
-    default void setRemainingValues(User user, @MappingTarget UserDto userDto) {
-        userDto.setStatus(Boolean.TRUE.equals(user.getActive()) ? "Active" : "Inactive");
-    }
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    void updateEntityFromDto(UserUpdateRequestDto dto, @MappingTarget User user);
 }

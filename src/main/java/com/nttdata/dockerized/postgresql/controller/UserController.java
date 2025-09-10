@@ -1,35 +1,46 @@
 package com.nttdata.dockerized.postgresql.controller;
 
-import com.nttdata.dockerized.postgresql.model.dto.UserDto;
-import com.nttdata.dockerized.postgresql.model.dto.UserSaveRequestDto;
-import com.nttdata.dockerized.postgresql.model.dto.UserSaveResponseDto;
+import com.nttdata.dockerized.postgresql.model.dto.UserCreateRequestDto;
+import com.nttdata.dockerized.postgresql.model.dto.UserResponseDto;
+import com.nttdata.dockerized.postgresql.model.dto.UserUpdateRequestDto;
 import com.nttdata.dockerized.postgresql.service.UserService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-import static com.nttdata.dockerized.postgresql.mapper.UserMapper.INSTANCE;
-
 @RestController
 @RequestMapping("/api/users")
+@RequiredArgsConstructor
 public class UserController {
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
 
     @GetMapping
-    public List<UserDto> getAllUsers() {
-        return INSTANCE.map(userService.listAll());
+    public List<UserResponseDto> getAllUsers() {
+        return userService.listAll();
     }
 
     @GetMapping("/{id}")
-    public UserDto getUserById(@PathVariable Long id) {
-        return INSTANCE.map(userService.findById(id));
+    public UserResponseDto getUserById(@PathVariable Long id) {
+        return userService.findById(id);
     }
 
     @PostMapping
-    public UserSaveResponseDto save(@RequestBody UserSaveRequestDto userSaveRequestDto) {
-        return INSTANCE.toUserSaveResponseDto(userService.save(INSTANCE.toEntity(userSaveRequestDto)));
+    public UserResponseDto save(@RequestBody UserCreateRequestDto userCreateRequestDto) {
+        return userService.save(userCreateRequestDto);
+    }
+
+    @PutMapping("/{id}")
+    public UserResponseDto update(@PathVariable Long id, @RequestBody UserUpdateRequestDto request) {
+        return userService.update(id, request);
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteById(@PathVariable Long id) {
+        userService.deleteById(id);
     }
 }
