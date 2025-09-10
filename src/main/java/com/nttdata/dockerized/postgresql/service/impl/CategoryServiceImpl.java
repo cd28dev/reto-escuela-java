@@ -1,6 +1,7 @@
 package com.nttdata.dockerized.postgresql.service.impl;
 
 import com.nttdata.dockerized.postgresql.exception.BadRequestException;
+import com.nttdata.dockerized.postgresql.exception.CustomBadRequestException;
 import com.nttdata.dockerized.postgresql.exception.NotFoundException;
 import com.nttdata.dockerized.postgresql.mapper.CategoryMapper;
 import com.nttdata.dockerized.postgresql.model.dto.CategoryCreateRequestDto;
@@ -40,8 +41,11 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public CategoryResponseDto save(CategoryCreateRequestDto request) {
-        if (request == null || request.getName() == null || request.getName().trim().isEmpty()) {
-            throw new BadRequestException("El nombre de la categoría no puede estar vacío");
+        if (request == null) {
+            throw new CustomBadRequestException("El request no puede ser nulo", 1000);
+        }
+        if (request.getName() == null || request.getName().trim().isEmpty()) {
+            throw new CustomBadRequestException("El nombre de la categoría no puede estar vacío", 1001);
         }
 
         Category category = categoryMapper.toEntity(request);
@@ -54,8 +58,11 @@ public class CategoryServiceImpl implements CategoryService {
         Category existingCategory = categoryRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Categoría no encontrada con ID: " + id));
 
-        if (request == null || request.getName() == null || request.getName().trim().isEmpty()) {
-            throw new BadRequestException("El nombre de la categoría no puede estar vacío");
+        if (request == null) {
+            throw new CustomBadRequestException("El request no puede ser nulo", 1000);
+        }
+        if (request.getName() == null || request.getName().trim().isEmpty()) {
+            throw new CustomBadRequestException("El nombre de la categoría no puede estar vacío", 1001);
         }
 
         categoryMapper.updateEntityFromDto(request, existingCategory);

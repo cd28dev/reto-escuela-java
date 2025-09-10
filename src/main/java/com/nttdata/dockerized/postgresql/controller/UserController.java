@@ -4,6 +4,7 @@ import com.nttdata.dockerized.postgresql.model.dto.UserCreateRequestDto;
 import com.nttdata.dockerized.postgresql.model.dto.UserResponseDto;
 import com.nttdata.dockerized.postgresql.model.dto.UserUpdateRequestDto;
 import com.nttdata.dockerized.postgresql.service.UserService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,38 +14,33 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/users")
+@RequiredArgsConstructor
 public class UserController {
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
 
     @GetMapping
-    public ResponseEntity<List<UserResponseDto>> getAllUsers() {
-        List<UserResponseDto> users = userService.listAll();
-        return ResponseEntity.ok(users);
+    public List<UserResponseDto> getAllUsers() {
+        return userService.listAll();
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserResponseDto> getUserById(@PathVariable Long id) {
-        UserResponseDto userDto = userService.findById(id);
-        return ResponseEntity.ok(userDto);
+    public UserResponseDto getUserById(@PathVariable Long id) {
+        return userService.findById(id);
     }
 
     @PostMapping
-    public ResponseEntity<UserResponseDto> save(@RequestBody UserCreateRequestDto userCreateRequestDto) {
-        UserResponseDto response = userService.save(userCreateRequestDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    public UserResponseDto save(@RequestBody UserCreateRequestDto userCreateRequestDto) {
+        return userService.save(userCreateRequestDto);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UserResponseDto> update(@PathVariable Long id, @RequestBody UserUpdateRequestDto request) {
-        UserResponseDto userDto = userService.update(id, request);
-        return ResponseEntity.ok(userDto);
+    public UserResponseDto update(@PathVariable Long id, @RequestBody UserUpdateRequestDto request) {
+        return userService.update(id, request);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteById(@PathVariable Long id) {
+    public void deleteById(@PathVariable Long id) {
         userService.deleteById(id);
-        return ResponseEntity.noContent().build();
     }
 }

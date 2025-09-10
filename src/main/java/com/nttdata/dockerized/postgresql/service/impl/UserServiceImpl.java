@@ -1,6 +1,7 @@
 package com.nttdata.dockerized.postgresql.service.impl;
 
 import com.nttdata.dockerized.postgresql.exception.BadRequestException;
+import com.nttdata.dockerized.postgresql.exception.CustomBadRequestException;
 import com.nttdata.dockerized.postgresql.exception.NotFoundException;
 import com.nttdata.dockerized.postgresql.mapper.UserMapper;
 import com.nttdata.dockerized.postgresql.model.dto.UserCreateRequestDto;
@@ -14,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-
 @Service
 public class UserServiceImpl implements UserService {
 
@@ -35,7 +35,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponseDto findById(Long id) {
         if (id == null) {
-            throw new BadRequestException("El ID no puede ser null");
+            throw new CustomBadRequestException("El ID no puede ser null", 2000);
         }
 
         User user = userRepository.findById(id)
@@ -47,7 +47,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public UserResponseDto save(UserCreateRequestDto request) {
         if (request == null) {
-            throw new BadRequestException("Los datos del usuario no pueden ser null");
+            throw new CustomBadRequestException("Los datos del usuario no pueden ser null", 2001);
         }
 
         User user = userMapper.toEntity(request);
@@ -61,10 +61,10 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public UserResponseDto update(Long id, UserUpdateRequestDto request) {
         if (id == null) {
-            throw new BadRequestException("El ID no puede ser null");
+            throw new CustomBadRequestException("El ID no puede ser null", 2000);
         }
         if (request == null) {
-            throw new BadRequestException("Los datos de actualización no pueden ser null");
+            throw new CustomBadRequestException("Los datos de actualización no pueden ser null", 2002);
         }
 
         User existingUser = userRepository.findById(id)
@@ -80,7 +80,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public void deleteById(Long id) {
         if (id == null) {
-            throw new BadRequestException("El ID no puede ser null");
+            throw new CustomBadRequestException("El ID no puede ser null", 2000);
         }
 
         User user = userRepository.findById(id)
