@@ -56,16 +56,21 @@ public class ProductServiceImpl implements ProductService {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Producto con id " + id + " no encontrado"));
 
-        Category category = categoryRepository.findById(request.getCategoryId())
-                .orElseThrow(() -> new NotFoundException("Categoría con id " + request.getCategoryId() + " no encontrada"));
-
-        // Mapear cambios
+        // Actualiza solo campos no nulos del DTO
         productMapper.updateEntityFromDto(request, product);
-        product.setCategory(category);
+
+        // Actualiza la categoría solo si viene en el DTO
+        if (request.getCategoryId() != null) {
+            Category category = categoryRepository.findById(request.getCategoryId())
+                    .orElseThrow(() -> new NotFoundException("Categoría con id " + request.getCategoryId() + " no encontrada"));
+            product.setCategory(category);
+        }
 
         Product updated = productRepository.save(product);
         return productMapper.toResponseDto(updated);
     }
+
+
 
     @Override
     public void deleteById(Long id) {

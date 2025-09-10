@@ -10,4 +10,7 @@ public interface PedidoService {
     PedidoResponseDto save(PedidoCreateRequestDto request);
     PedidoResponseDto update(Long id, PedidoUpdateRequestDto request);
     void deleteById(Long id);
+    PedidoResponseDto removeDetalle(Long pedidoId, Long detalleId);
+    PedidoResponseDto updateDetalle(Long pedidoId, Long detalleId, DetallePedidoUpdateRequestDto request);
+    PedidoResponseDto addDetalle(Long pedidoId, DetallePedidoCreateRequestDto detalleDto);
 }
