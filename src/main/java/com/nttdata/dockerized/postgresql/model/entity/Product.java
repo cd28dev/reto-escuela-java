@@ -32,6 +32,6 @@ public class Product {
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
-    @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "producto", cascade = CascadeType.MERGE, fetch = FetchType.LAZY)
     private List<DetallePedido> detallesPedido = new ArrayList<>();
 }

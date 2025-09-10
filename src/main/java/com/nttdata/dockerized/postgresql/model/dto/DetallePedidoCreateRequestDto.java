@@ -12,9 +12,6 @@ import java.math.BigDecimal;
 @Setter
 public class DetallePedidoCreateRequestDto {
 
-    @NotNull(message = "El ID del pedido es obligatorio")
-    private Long pedidoId;
-
     @NotNull(message = "El ID del producto es obligatorio")
     private Long productoId;
 

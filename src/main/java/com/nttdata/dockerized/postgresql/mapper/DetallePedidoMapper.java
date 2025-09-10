@@ -20,7 +20,7 @@ public interface DetallePedidoMapper {
     void updateEntityFromDto(DetallePedidoUpdateRequestDto dto, @MappingTarget DetallePedido detallePedido);
 
     @Mapping(target = "pedidoId", source = "pedido.id")
-    @Mapping(target = "productoId", source = "producto.id")
+    @Mapping(target = "productId", source = "producto.id")
     @Mapping(target = "subtotal", expression = "java(detallePedido.getSubtotal())")
     DetallePedidoResponseDto toResponseDto(DetallePedido detallePedido);
 
