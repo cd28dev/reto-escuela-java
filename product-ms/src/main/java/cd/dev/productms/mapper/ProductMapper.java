@@ -3,10 +3,10 @@ package cd.dev.productms.mapper;
 import java.util.List;
 
 import cd.dev.productms.model.dto.ProductCreateRequestDto;
+import cd.dev.productms.model.dto.ProductResponseDto;
 import cd.dev.productms.model.dto.ProductUpdateRequestDto;
 import cd.dev.productms.model.entity.Product;
-import org.springframework.web.bind.annotation.Mapping;
-import org.mapstruct.Mapping;
+import org.mapstruct.*;
 
 
 @Mapper(componentModel = "spring")

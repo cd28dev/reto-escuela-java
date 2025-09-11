@@ -4,6 +4,7 @@ import cd.dev.productms.model.dto.ProductCreateRequestDto;
 import cd.dev.productms.model.dto.ProductResponseDto;
 import cd.dev.productms.model.dto.ProductUpdateRequestDto;
 import cd.dev.productms.service.ProductService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -42,3 +43,4 @@ public class ProductController {
     public void deleteProduct(@PathVariable Long id) {
         productService.deleteById(id);
     }
+}

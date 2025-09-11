@@ -6,7 +6,7 @@ import cd.dev.productms.model.dto.ProductUpdateRequestDto;
 
 import java.util.List;
 
-public class ProductService {
+public interface ProductService {
     List<ProductResponseDto> listAll();
     ProductResponseDto findById(Long id);
     ProductResponseDto save(ProductCreateRequestDto request);
