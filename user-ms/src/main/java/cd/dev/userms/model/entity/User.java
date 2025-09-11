@@ -30,9 +30,6 @@ public class User {
     @Column
     private Boolean active;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Pedido> pedidos = new ArrayList<>();
-
     @PrePersist
     protected void onCreate() {
         this.fechaRegistro = LocalDateTime.now();
