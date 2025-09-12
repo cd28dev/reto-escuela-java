@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@FeignClient(name = "pedido-service", url = "${services.pedido-service.url}")
+@FeignClient(name = "pedido-service", url = "${services.pedido-ms.url}")
 public interface PedidoServiceClient {
 
     @GetMapping("/api/pedidos/{id}")

@@ -1,8 +1,5 @@
 package cd.dev.compositionorder.dto;
 
-import cd.dev.compositionorder.dto.external.UserResponseDto;
-import cd.dev.compositionorder.dto.external.PedidoResponseDto;
-import cd.dev.compositionorder.dto.external.ProductResponseDto;
 import lombok.*;
 import java.time.LocalDateTime;
 import java.math.BigDecimal;

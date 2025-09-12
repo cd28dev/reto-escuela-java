@@ -9,6 +9,7 @@ import cd.dev.compositionorder.feign.ProductServiceClient;
 import cd.dev.compositionorder.feign.UserServiceClient;
 import cd.dev.compositionorder.service.OrderCompositionService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,12 +18,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
-public class OrderCompositionServiceImpl implements OrderCompositionService {
 
-    private final UserServiceClient userClient;
-    private final ProductServiceClient productClient;
-    private final PedidoServiceClient pedidoClient;
+public class OrderCompositionServiceImpl implements OrderCompositionService {
+    @Autowired
+    private UserServiceClient userClient;
+
+    @Autowired
+    private ProductServiceClient productClient;
+
+    @Autowired
+    private PedidoServiceClient pedidoClient;
 
     @Override
     @Transactional
