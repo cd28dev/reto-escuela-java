@@ -1,9 +1,5 @@
 package cd.dev.pedidoms.exception;
 
-import cd.dev.productms.exception.ErrorResponse;
-import com.nttdata.dockerized.postgresql.exception.BadRequestException;
-import com.nttdata.dockerized.postgresql.exception.CustomBadRequestException;
-import com.nttdata.dockerized.postgresql.exception.NotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
