@@ -1,4 +1,3 @@
-
 services:
   # Pedido microservicio
   pedido-ms:
@@ -38,6 +37,24 @@ services:
       - DATABASE_PASSWORD=admin
     depends_on:
       - user-db
+
+  # Composition Order microservicio (ORQUESTADOR)
+  composition-order:
+    build:
+      context: ./composition-order
+    ports:
+      - 8084:8084
+    environment:
+      # URLs de los microservicios dentro de Docker
+      - PEDIDO_MS_URL=http://pedido-ms:8081
+      - PRODUCT_MS_URL=http://product-ms:8082
+      - USER_MS_URL=http://user-ms:8083
+      # Perfil de Docker
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      - pedido-ms
+      - product-ms
+      - user-ms
 
   # Bases de datos
   pedido-db:
