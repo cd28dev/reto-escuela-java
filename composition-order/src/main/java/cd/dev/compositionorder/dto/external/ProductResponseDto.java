@@ -20,7 +20,5 @@ public class ProductResponseDto {
     public static class CategoryResponseDto {
         private Long id;
         private String name;
-        private String description;
-        private Boolean active;
     }
 }

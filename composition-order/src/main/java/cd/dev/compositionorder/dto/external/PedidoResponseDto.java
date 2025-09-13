@@ -12,7 +12,8 @@ public class PedidoResponseDto {
     private Long id;
     private LocalDateTime fechaPedido;
     private Boolean active;
-    private Long userId;
+    private Long id_user;
     private List<DetallePedidoResponseDto> detalles;
     private BigDecimal total;
+
 }

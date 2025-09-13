@@ -11,5 +11,6 @@ public class PedidoCreateRequestDto {
     @NotNull
     private Long userId;
 
-    private Boolean active = true;
+    @NotEmpty
+    private List<DetallePedidoCreateRequestDto> detalles;
 }
