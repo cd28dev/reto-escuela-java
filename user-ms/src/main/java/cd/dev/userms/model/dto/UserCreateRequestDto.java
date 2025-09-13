@@ -20,5 +20,6 @@ public class UserCreateRequestDto {
     @Email(message = "El email no tiene un formato válido")
     private String email;
 
+    @Builder.Default
     private Boolean active = true;
 }

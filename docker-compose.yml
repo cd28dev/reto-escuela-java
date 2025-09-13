@@ -1,4 +1,3 @@
-
 services:
   # Pedido microservicio
   pedido-ms:
@@ -6,12 +5,10 @@ services:
       context: ./pedido-ms
     ports:
       - 8081:8081
-    environment:
-      - DATABASE_URL=jdbc:postgresql://pedido-db:5432/pedido_db
-      - DATABASE_USERNAME=admin
-      - DATABASE_PASSWORD=admin
-    depends_on:
-      - pedido-db
+    #environment:
+    # - DATABASE_URL=jdbc:postgresql://pedido-db:5432/pedido_db
+    # - DATABASE_USERNAME=admin
+    # - DATABASE_PASSWORD=admin
 
   # Product microservicio
   product-ms:
@@ -19,12 +16,10 @@ services:
       context: ./product-ms
     ports:
       - 8082:8082
-    environment:
-      - DATABASE_URL=jdbc:postgresql://product-db:5432/product_db
-      - DATABASE_USERNAME=admin
-      - DATABASE_PASSWORD=admin
-    depends_on:
-      - product-db
+    #environment:
+    # - DATABASE_URL=jdbc:postgresql://product-db:5432/product_db
+    # - DATABASE_USERNAME=admin
+    # - DATABASE_PASSWORD=admin
 
   # User microservicio
   user-ms:
@@ -32,61 +27,75 @@ services:
       context: ./user-ms
     ports:
       - 8083:8083
+    #environment:
+    # - DATABASE_URL=jdbc:postgresql://user-db:5432/user_db
+    # - DATABASE_USERNAME=admin
+    # - DATABASE_PASSWORD=admin
+
+  # Composition Order microservicio (ORQUESTADOR)
+  composition-order:
+    build:
+      context: ./composition-order
+    ports:
+      - 8084:8084
     environment:
-      - DATABASE_URL=jdbc:postgresql://user-db:5432/user_db
-      - DATABASE_USERNAME=admin
-      - DATABASE_PASSWORD=admin
+      # URLs de los microservicios dentro de Docker
+      - PEDIDO_MS_URL=http://pedido-ms:8081
+      - PRODUCT_MS_URL=http://product-ms:8082
+      - USER_MS_URL=http://user-ms:8083
+      # Perfil de Docker
+      - SPRING_PROFILES_ACTIVE=docker
     depends_on:
-      - user-db
+      - pedido-ms
+      - product-ms
+      - user-ms
 
-  # Bases de datos
-  pedido-db:
-    image: postgres:15
-    environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: admin
-      POSTGRES_DB: pedido_db
-    ports:
-      - 5434:5432
-    volumes:
-      - pedido-data:/var/lib/postgresql/data
+  # pedido-db:
+  #   image: postgres:15
+  #   environment:
+  #     POSTGRES_USER: admin
+  #     POSTGRES_PASSWORD: admin
+  #     POSTGRES_DB: pedido_db
+  #   ports:
+  #     - 5434:5432
+  #   volumes:
+  #     - pedido-data:/var/lib/postgresql/data
+  #
+  # product-db:
+  #   image: postgres:15
+  #   environment:
+  #     POSTGRES_USER: admin
+  #     POSTGRES_PASSWORD: admin
+  #     POSTGRES_DB: product_db
+  #   ports:
+  #     - 5435:5432
+  #   volumes:
+  #     - product-data:/var/lib/postgresql/data
+  #
+  # user-db:
+  #   image: postgres:15
+  #   environment:
+  #     POSTGRES_USER: admin
+  #     POSTGRES_PASSWORD: admin
+  #     POSTGRES_DB: user_db
+  #   ports:
+  #     - 5436:5432
+  #   volumes:
+  #     - user-data:/var/lib/postgresql/data
 
-  product-db:
-    image: postgres:15
-    environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: admin
-      POSTGRES_DB: product_db
-    ports:
-      - 5435:5432
-    volumes:
-      - product-data:/var/lib/postgresql/data
+  # pgadmin:
+  #   image: dpage/pgadmin4
+  #   ports:
+  #     - 8080:80
+  #   environment:
+  #     PGADMIN_DEFAULT_EMAIL: admin@admin.com
+  #     PGADMIN_DEFAULT_PASSWORD: admin
+  #   depends_on:
+  #     - pedido-db
+  #     - product-db
+  #     - user-db
 
-  user-db:
-    image: postgres:15
-    environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: admin
-      POSTGRES_DB: user_db
-    ports:
-      - 5436:5432
-    volumes:
-      - user-data:/var/lib/postgresql/data
-
-  # PgAdmin
-  pgadmin:
-    image: dpage/pgadmin4
-    ports:
-      - 8080:80
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@admin.com
-      PGADMIN_DEFAULT_PASSWORD: admin
-    depends_on:
-      - pedido-db
-      - product-db
-      - user-db
-
-volumes:
-  pedido-data:
-  product-data:
-  user-data:
+# volumes:
+#   pedido-data:
+#   product-data:
+#   user-data:

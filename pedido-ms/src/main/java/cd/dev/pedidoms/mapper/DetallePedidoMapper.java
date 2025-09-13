@@ -11,17 +11,15 @@ import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface DetallePedidoMapper {
-
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "pedido", ignore = true)
-    @Mapping(target = "producto", ignore = true)
     DetallePedido toEntity(DetallePedidoCreateRequestDto dto);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateEntityFromDto(DetallePedidoUpdateRequestDto dto, @MappingTarget DetallePedido detallePedido);
 
+    @Mapping(target = "productId", source = "productId")
     @Mapping(target = "pedidoId", source = "pedido.id")
-    @Mapping(target = "productId", source = "producto.id")
     @Mapping(target = "subtotal", expression = "java(detallePedido.getSubtotal())")
     DetallePedidoResponseDto toResponseDto(DetallePedido detallePedido);
 

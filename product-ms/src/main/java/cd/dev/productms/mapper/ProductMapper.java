@@ -14,15 +14,13 @@ public interface ProductMapper {
 
     // CREATE → de DTO a entidad
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "category", ignore = true) // se setea en el service
-    @Mapping(target = "detallesPedido", ignore = true)
+    @Mapping(target = "category", ignore = true)
     Product toEntity(ProductCreateRequestDto dto);
 
     // UPDATE → aplicamos solo los campos no nulos
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "category", ignore = true) // se maneja en el service
-    @Mapping(target = "detallesPedido", ignore = true)
+    @Mapping(target = "category", ignore = true)
     void updateEntityFromDto(ProductUpdateRequestDto dto, @MappingTarget Product entity);
 
     // RESPONSE → de entidad a DTO
